@@ -131,9 +131,8 @@ export default function HeroSlider({
             transition={{ delay: 0.3, duration: 0.6 }}
             className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
           >
-            Transform Your Ideas Into
-            <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Stunning Landing Pages
+            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              AI-Powered Pages, Ready to Sell
             </span>
           </motion.h1>
           
