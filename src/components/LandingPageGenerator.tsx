@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Download, Eye, Loader2, CheckCircle, AlertCircle,
   Zap, Shield, Globe, Star, Users, TrendingUp, Code, Palette,
-  ChevronDown, Play, BookOpen, HelpCircle, Mail
+  ChevronDown, Play, BookOpen, HelpCircle, Mail, Wand2
 } from 'lucide-react';
 import { LandingPageService } from '../services/landingPageService';
 import { GenerationOptions, GenerationResult } from '../types';
