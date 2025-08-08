@@ -11,7 +11,7 @@ import Sidebar from './Sidebar';
 import HeroSlider from './HeroSlider';
 
 export default function LandingPageGenerator() {
-  const [url, setUrl] = useState('');
+  const [targetMarket, setTargetMarket] = useState('ecommerce');
   const [options, setOptions] = useState<GenerationOptions>({
     template: 'modern',
     language: 'en',
@@ -32,6 +32,28 @@ export default function LandingPageGenerator() {
   const pricingRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
 
+  // Market-based template mapping
+  const marketTemplates = {
+    ecommerce: 'modern',
+    saas: 'minimal',
+    luxury: 'elegant',
+    fitness: 'bold',
+    tech: 'modern',
+    fashion: 'elegant',
+    food: 'bold',
+    education: 'minimal'
+  };
+
+  const targetMarkets = [
+    { value: 'ecommerce', label: 'E-commerce & Retail', description: 'Online stores, product sales' },
+    { value: 'saas', label: 'SaaS & Software', description: 'Software services, apps' },
+    { value: 'luxury', label: 'Luxury & Premium', description: 'High-end products, luxury brands' },
+    { value: 'fitness', label: 'Fitness & Health', description: 'Gyms, supplements, wellness' },
+    { value: 'tech', label: 'Technology', description: 'Tech products, gadgets' },
+    { value: 'fashion', label: 'Fashion & Beauty', description: 'Clothing, cosmetics, accessories' },
+    { value: 'food', label: 'Food & Beverage', description: 'Restaurants, food delivery' },
+    { value: 'education', label: 'Education & Courses', description: 'Online courses, training' }
+  ];
   const scrollToSection = (sectionRef: React.RefObject<HTMLDivElement>, sectionName: string) => {
     setActiveSection(sectionName);
     sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -53,9 +75,15 @@ export default function LandingPageGenerator() {
     }
   };
 
+  // Update template when market changes
+  const handleMarketChange = (market: string) => {
+    setTargetMarket(market);
+    const template = marketTemplates[market as keyof typeof marketTemplates];
+    setOptions({ ...options, template: template as any });
+  };
   const handleGenerate = async () => {
-    if (!url.trim()) {
-      setError('Please enter a valid product URL');
+    if (!targetMarket) {
+      setError('Please select a target market');
       return;
     }
 
@@ -64,7 +92,9 @@ export default function LandingPageGenerator() {
     setResult(null);
 
     try {
-      const generationResult = await landingPageService.generateLandingPage(url, options);
+      // Generate a mock URL based on the selected market
+      const mockUrl = `https://example.com/${targetMarket}-product`;
+      const generationResult = await landingPageService.generateLandingPage(mockUrl, options);
       setResult(generationResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -197,43 +227,42 @@ export default function LandingPageGenerator() {
               className="max-w-4xl mx-auto"
             >
               <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-200">
-                {/* URL Input */}
+                {/* Target Market Selection */}
                 <div className="mb-6">
-                  <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
-                    Product URL
+                  <label htmlFor="targetMarket" className="block text-sm font-medium text-gray-700 mb-2">
+                    Target Market
                   </label>
-                  <input
-                    type="url"
-                    id="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://example.com/product"
+                  <select
+                    id="targetMarket"
+                    value={targetMarket}
+                    onChange={(e) => handleMarketChange(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     disabled={isGenerating}
-                  />
+                  >
+                    {targetMarkets.map((market) => (
+                      <option key={market.value} value={market.value}>
+                        {market.label} - {market.description}
+                      </option>
+                    ))}
+                  </select>
                   <p className="text-sm text-gray-500 mt-1">
-                    Enter any product URL (Amazon, eBay, etc.) or use test URLs like "test.com/product" for demo
+                    Select your target market and we'll automatically choose the best template style
                   </p>
                 </div>
 
                 {/* Options Grid */}
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
-                  {/* Template Selection */}
+                  {/* Selected Template Display */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Template Style
+                      Auto-Selected Template
                     </label>
-                    <select
-                      value={options.template}
-                      onChange={(e) => setOptions({ ...options, template: e.target.value as any })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={isGenerating}
-                    >
-                      <option value="modern">Modern (Blue/Purple)</option>
-                      <option value="minimal">Minimal (Clean/Simple)</option>
-                      <option value="elegant">Elegant (Dark/Gold)</option>
-                      <option value="bold">Bold (Red/Dynamic)</option>
-                    </select>
+                    <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50">
+                      <span className="text-gray-700 capitalize">{options.template}</span>
+                      <span className="text-sm text-gray-500 ml-2">
+                        (Optimized for {targetMarkets.find(m => m.value === targetMarket)?.label})
+                      </span>
+                    </div>
                   </div>
 
                   {/* Language Selection */}
@@ -280,7 +309,7 @@ export default function LandingPageGenerator() {
                 {/* Generate Button */}
                 <button
                   onClick={handleGenerate}
-                  disabled={isGenerating || !url.trim()}
+                  disabled={isGenerating || !targetMarket}
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
                 >
                   {isGenerating ? (
