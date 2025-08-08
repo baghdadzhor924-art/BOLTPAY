@@ -1,12 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Rocket, Download, Eye, Settings, Loader2, CheckCircle, AlertCircle,
+  Download, Eye, Loader2, CheckCircle, AlertCircle,
   Zap, Shield, Globe, Star, Users, TrendingUp, Code, Palette,
-  Menu, X, ChevronDown, Play, BookOpen, HelpCircle, Mail
+  ChevronDown, Play, BookOpen, HelpCircle, Mail
 } from 'lucide-react';
 import { LandingPageService } from '../services/landingPageService';
 import { GenerationOptions, GenerationResult } from '../types';
+import HeaderMenu from './HeaderMenu';
+import HeroWithSlider from './HeroWithSlider';
 
 export default function LandingPageGenerator() {
   const [url, setUrl] = useState('');
@@ -20,8 +22,8 @@ export default function LandingPageGenerator() {
   const [result, setResult] = useState<GenerationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('generator');
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
 
   const landingPageService = LandingPageService.getInstance();
   const generatorRef = useRef<HTMLDivElement>(null);
@@ -32,8 +34,31 @@ export default function LandingPageGenerator() {
 
   const scrollToSection = (sectionRef: React.RefObject<HTMLDivElement>, sectionName: string) => {
     setActiveSection(sectionName);
-    setMobileMenuOpen(false);
     sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleNavigation = (route: string, id: string) => {
+    console.log(`Navigating to ${route} (${id})`);
+    
+    // Handle specific navigation cases
+    if (id === 'generate') {
+      setShowGenerateModal(true);
+      scrollToSection(generatorRef, 'generator');
+    } else {
+      // For other routes, you can implement routing logic here
+      // For now, just log the navigation
+      console.log(`Would navigate to ${route}`);
+    }
+  };
+
+  const handleViewPage = (slide: any) => {
+    console.log('Viewing page:', slide);
+    // Implement page viewing logic
+  };
+
+  const handleGenerateNew = () => {
+    setShowGenerateModal(true);
+    scrollToSection(generatorRef, 'generator');
   };
 
   const handleGenerate = async () => {
@@ -149,169 +174,16 @@ export default function LandingPageGenerator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
-      {/* Navigation Header */}
-      <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md shadow-sm z-50 border-b border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <Rocket className="w-8 h-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">Landing Page Bolt</span>
-            </div>
+      {/* Header Menu */}
+      <HeaderMenu onNavigate={handleNavigation} />
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-8">
-              <button
-                onClick={() => scrollToSection(generatorRef, 'generator')}
-                className={`text-sm font-medium transition-colors ${
-                  activeSection === 'generator' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                Generator
-              </button>
-              <button
-                onClick={() => scrollToSection(featuresRef, 'features')}
-                className={`text-sm font-medium transition-colors ${
-                  activeSection === 'features' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                Features
-              </button>
-              <button
-                onClick={() => scrollToSection(templatesRef, 'templates')}
-                className={`text-sm font-medium transition-colors ${
-                  activeSection === 'templates' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                Templates
-              </button>
-              <button
-                onClick={() => scrollToSection(pricingRef, 'pricing')}
-                className={`text-sm font-medium transition-colors ${
-                  activeSection === 'pricing' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                Pricing
-              </button>
-              <button
-                onClick={() => scrollToSection(aboutRef, 'about')}
-                className={`text-sm font-medium transition-colors ${
-                  activeSection === 'about' ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                About
-              </button>
-            </div>
+      {/* Hero with Slider */}
+      <HeroWithSlider 
+        onViewPage={handleViewPage}
+        onGenerateNew={handleGenerateNew}
+      />
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="md:hidden py-4 border-t border-gray-200"
-            >
-              <div className="flex flex-col space-y-4">
-                <button
-                  onClick={() => scrollToSection(generatorRef, 'generator')}
-                  className="text-left text-gray-600 hover:text-blue-600 font-medium"
-                >
-                  Generator
-                </button>
-                <button
-                  onClick={() => scrollToSection(featuresRef, 'features')}
-                  className="text-left text-gray-600 hover:text-blue-600 font-medium"
-                >
-                  Features
-                </button>
-                <button
-                  onClick={() => scrollToSection(templatesRef, 'templates')}
-                  className="text-left text-gray-600 hover:text-blue-600 font-medium"
-                >
-                  Templates
-                </button>
-                <button
-                  onClick={() => scrollToSection(pricingRef, 'pricing')}
-                  className="text-left text-gray-600 hover:text-blue-600 font-medium"
-                >
-                  Pricing
-                </button>
-                <button
-                  onClick={() => scrollToSection(aboutRef, 'about')}
-                  className="text-left text-gray-600 hover:text-blue-600 font-medium"
-                >
-                  About
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </nav>
-
-      <div className="pt-16">
-        {/* Hero Section */}
-        <section className="py-20 px-4">
-          <div className="container mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-12"
-            >
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                Create Stunning
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {' '}Landing Pages
-                </span>
-              </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                Transform any product URL into a conversion-optimized landing page using advanced AI technology. 
-                No coding required, professional results guaranteed.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => scrollToSection(generatorRef, 'generator')}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Start Creating
-                </button>
-                <button
-                  onClick={() => scrollToSection(featuresRef, 'features')}
-                  className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg hover:border-blue-600 hover:text-blue-600 transition-all duration-200 flex items-center justify-center"
-                >
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  Learn More
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto"
-            >
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-gray-600 font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
+      <div>
         {/* Generator Section */}
         <section ref={generatorRef} className="py-20 px-4 bg-white">
           <div className="container mx-auto">
@@ -320,9 +192,9 @@ export default function LandingPageGenerator() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-12"
             >
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">AI Landing Page Generator</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Enter any product URL and watch our AI create a professional landing page in seconds
+              <h2 className="text-4xl font-bold text-gray-900 mb-4" dir="rtl">مولد صفحات الهبوط بالذكاء الاصطناعي</h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto" dir="rtl">
+                أدخل أي رابط منتج وشاهد الذكاء الاصطناعي ينشئ صفحة هبوط احترافية في ثوانٍ
               </p>
             </motion.div>
 
@@ -335,8 +207,8 @@ export default function LandingPageGenerator() {
               <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-200">
                 {/* URL Input */}
                 <div className="mb-6">
-                  <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
-                    Product URL
+                  <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                    رابط المنتج
                   </label>
                   <input
                     type="url"
@@ -348,7 +220,7 @@ export default function LandingPageGenerator() {
                     disabled={isGenerating}
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    Enter any product URL (Amazon, eBay, etc.) or use test URLs like "test.com/product" for demo
+                    أدخل أي رابط منتج (أمازون، إيباي، إلخ) أو استخدم روابط تجريبية مثل "test.com/product" للتجربة
                   </p>
                 </div>
 
@@ -356,8 +228,8 @@ export default function LandingPageGenerator() {
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   {/* Template Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Template Style
+                    <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                      نمط القالب
                     </label>
                     <select
                       value={options.template}
@@ -365,17 +237,17 @@ export default function LandingPageGenerator() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={isGenerating}
                     >
-                      <option value="modern">Modern (Blue/Purple)</option>
-                      <option value="minimal">Minimal (Clean/Simple)</option>
-                      <option value="elegant">Elegant (Dark/Gold)</option>
-                      <option value="bold">Bold (Red/Dynamic)</option>
+                      <option value="modern">عصري (أزرق/بنفسجي)</option>
+                      <option value="minimal">بسيط (نظيف/بسيط)</option>
+                      <option value="elegant">أنيق (داكن/ذهبي)</option>
+                      <option value="bold">جريء (أحمر/ديناميكي)</option>
                     </select>
                   </div>
 
                   {/* Language Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Language
+                    <label className="block text-sm font-medium text-gray-700 mb-2" dir="rtl">
+                      اللغة
                     </label>
                     <select
                       value={options.language}
@@ -383,14 +255,14 @@ export default function LandingPageGenerator() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={isGenerating}
                     >
+                      <option value="ar">العربية</option>
                       <option value="en">English</option>
-                      <option value="ar">العربية (Arabic)</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Additional Options */}
-                <div className="flex flex-wrap gap-4 mb-6">
+                <div className="flex flex-wrap gap-4 mb-6" dir="rtl">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -399,7 +271,7 @@ export default function LandingPageGenerator() {
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       disabled={isGenerating}
                     />
-                    <span className="ml-2 text-sm text-gray-700">Include Customer Reviews</span>
+                    <span className="mr-2 text-sm text-gray-700">تضمين تقييمات العملاء</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -409,7 +281,7 @@ export default function LandingPageGenerator() {
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       disabled={isGenerating}
                     />
-                    <span className="ml-2 text-sm text-gray-700">Include Social Proof</span>
+                    <span className="mr-2 text-sm text-gray-700">تضمين الدليل الاجتماعي</span>
                   </label>
                 </div>
 
@@ -418,16 +290,17 @@ export default function LandingPageGenerator() {
                   onClick={handleGenerate}
                   disabled={isGenerating || !url.trim()}
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
+                  dir="rtl"
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating Landing Page...
+                      <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+                      جاري إنشاء صفحة الهبوط...
                     </>
                   ) : (
                     <>
-                      <Rocket className="w-5 h-5 mr-2" />
-                      Generate Landing Page
+                      <Wand2 className="w-5 h-5 ml-2" />
+                      إنشاء صفحة هبوط
                     </>
                   )}
                 </button>
@@ -456,22 +329,22 @@ export default function LandingPageGenerator() {
                 >
                   <div className="flex items-center mb-4">
                     <CheckCircle className="w-6 h-6 text-green-500 mr-2" />
-                    <h2 className="text-2xl font-bold text-gray-900">Landing Page Generated!</h2>
+                    <h2 className="text-2xl font-bold text-gray-900" dir="rtl">تم إنشاء صفحة الهبوط!</h2>
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-sm text-gray-600">Product</div>
+                      <div className="text-sm text-gray-600" dir="rtl">المنتج</div>
                       <div className="font-semibold text-gray-900">{result.productTitle}</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-sm text-gray-600">Generation Time</div>
-                      <div className="font-semibold text-gray-900">{result.generationTime}ms</div>
+                      <div className="text-sm text-gray-600" dir="rtl">وقت الإنشاء</div>
+                      <div className="font-semibold text-gray-900">{result.generationTime} مللي ثانية</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-sm text-gray-600">Data Source</div>
+                      <div className="text-sm text-gray-600" dir="rtl">مصدر البيانات</div>
                       <div className="font-semibold text-gray-900">
-                        {result.isRealData ? 'Real Data' : 'Mock Data'}
+                        {result.isRealData ? 'بيانات حقيقية' : 'بيانات تجريبية'}
                       </div>
                     </div>
                   </div>
@@ -480,28 +353,30 @@ export default function LandingPageGenerator() {
                     <button
                       onClick={handlePreview}
                       className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      dir="rtl"
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Preview
+                      <Eye className="w-4 h-4 ml-2" />
+                      معاينة
                     </button>
                     <button
                       onClick={handleDownload}
                       className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      dir="rtl"
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download HTML
+                      <Download className="w-4 h-4 ml-2" />
+                      تحميل HTML
                     </button>
                   </div>
 
                   {/* HTML Preview */}
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">Generated HTML</h3>
+                      <h3 className="text-lg font-semibold text-gray-900" dir="rtl">كود HTML المُنشأ</h3>
                       <button
                         onClick={() => setShowPreview(!showPreview)}
                         className="text-blue-600 hover:text-blue-700 text-sm flex items-center"
                       >
-                        {showPreview ? 'Hide' : 'Show'} Code
+                        {showPreview ? 'إخفاء' : 'عرض'} الكود
                         <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${showPreview ? 'rotate-180' : ''}`} />
                       </button>
                     </div>
@@ -527,9 +402,9 @@ export default function LandingPageGenerator() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Powerful Features</h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Everything you need to create high-converting landing pages with professional quality
+              <h2 className="text-4xl font-bold text-gray-900 mb-4" dir="rtl">ميزات قوية</h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto" dir="rtl">
+                كل ما تحتاجه لإنشاء صفحات هبوط عالية التحويل بجودة احترافية
               </p>
             </motion.div>
 
@@ -561,9 +436,9 @@ export default function LandingPageGenerator() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Beautiful Templates</h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Choose from professionally designed templates optimized for different industries and conversion goals
+              <h2 className="text-4xl font-bold text-gray-900 mb-4" dir="rtl">قوالب جميلة</h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto" dir="rtl">
+                اختر من بين القوالب المصممة بشكل احترافي والمحسنة لمختلف الصناعات وأهداف التحويل
               </p>
             </motion.div>
 
@@ -607,9 +482,9 @@ export default function LandingPageGenerator() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Start for free and upgrade as you grow. No hidden fees, cancel anytime.
+              <h2 className="text-4xl font-bold text-gray-900 mb-4" dir="rtl">أسعار بسيطة</h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto" dir="rtl">
+                ابدأ مجاناً وقم بالترقية مع نموك. لا توجد رسوم خفية، ألغِ في أي وقت.
               </p>
             </motion.div>
 
@@ -730,9 +605,9 @@ export default function LandingPageGenerator() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">About Landing Page Bolt</h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                We're on a mission to democratize high-quality landing page creation through the power of AI
+              <h2 className="text-4xl font-bold text-gray-900 mb-4" dir="rtl">حول Landing Page Bolt</h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto" dir="rtl">
+                نحن في مهمة لجعل إنشاء صفحات الهبوط عالية الجودة متاحاً للجميع من خلال قوة الذكاء الاصطناعي
               </p>
             </motion.div>
 
@@ -819,9 +694,9 @@ export default function LandingPageGenerator() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-              <p className="text-xl text-gray-600">
-                Everything you need to know about Landing Page Bolt
+              <h2 className="text-4xl font-bold text-gray-900 mb-4" dir="rtl">الأسئلة الشائعة</h2>
+              <p className="text-xl text-gray-600" dir="rtl">
+                كل ما تحتاج لمعرفته حول Landing Page Bolt
               </p>
             </motion.div>
 
@@ -876,24 +751,25 @@ export default function LandingPageGenerator() {
               animate={{ opacity: 1, y: 0 }}
               className="max-w-3xl mx-auto"
             >
-              <h2 className="text-4xl font-bold text-white mb-6">
-                Ready to Create Your First Landing Page?
+              <h2 className="text-4xl font-bold text-white mb-6" dir="rtl">
+                هل أنت مستعد لإنشاء صفحة الهبوط الأولى؟
               </h2>
-              <p className="text-xl text-blue-100 mb-8">
-                Join thousands of entrepreneurs and businesses who trust Landing Page Bolt 
-                to create high-converting landing pages in seconds.
+              <p className="text-xl text-blue-100 mb-8" dir="rtl">
+                انضم إلى آلاف رجال الأعمال والشركات الذين يثقون في Landing Page Bolt 
+                لإنشاء صفحات هبوط عالية التحويل في ثوانٍ.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={() => scrollToSection(generatorRef, 'generator')}
                   className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+                  dir="rtl"
                 >
-                  <Rocket className="w-5 h-5 mr-2" />
-                  Start Creating Now
+                  <Wand2 className="w-5 h-5 ml-2" />
+                  ابدأ الإنشاء الآن
                 </button>
-                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center">
-                  <Mail className="w-5 h-5 mr-2" />
-                  Contact Sales
+                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center" dir="rtl">
+                  <Mail className="w-5 h-5 ml-2" />
+                  اتصل بالمبيعات
                 </button>
               </div>
             </motion.div>
@@ -906,11 +782,11 @@ export default function LandingPageGenerator() {
             <div className="grid md:grid-cols-4 gap-8">
               <div>
                 <div className="flex items-center space-x-2 mb-4">
-                  <Rocket className="w-8 h-8 text-blue-400" />
+                  <Wand2 className="w-8 h-8 text-blue-400" />
                   <span className="text-xl font-bold">Landing Page Bolt</span>
                 </div>
-                <p className="text-gray-400 mb-4">
-                  Create stunning, conversion-optimized landing pages with the power of AI.
+                <p className="text-gray-400 mb-4" dir="rtl">
+                  أنشئ صفحات هبوط مذهلة ومحسنة للتحويل بقوة الذكاء الاصطناعي.
                 </p>
                 <div className="flex space-x-4">
                   <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 cursor-pointer">
@@ -926,7 +802,7 @@ export default function LandingPageGenerator() {
               </div>
               
               <div>
-                <h3 className="font-semibold mb-4">Product</h3>
+                <h3 className="font-semibold mb-4" dir="rtl">المنتج</h3>
                 <ul className="space-y-2 text-gray-400">
                   <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
                   <li><a href="#" className="hover:text-white transition-colors">Templates</a></li>
@@ -936,7 +812,7 @@ export default function LandingPageGenerator() {
               </div>
               
               <div>
-                <h3 className="font-semibold mb-4">Company</h3>
+                <h3 className="font-semibold mb-4" dir="rtl">الشركة</h3>
                 <ul className="space-y-2 text-gray-400">
                   <li><a href="#" className="hover:text-white transition-colors">About</a></li>
                   <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
@@ -946,7 +822,7 @@ export default function LandingPageGenerator() {
               </div>
               
               <div>
-                <h3 className="font-semibold mb-4">Support</h3>
+                <h3 className="font-semibold mb-4" dir="rtl">الدعم</h3>
                 <ul className="space-y-2 text-gray-400">
                   <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
                   <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
@@ -957,7 +833,7 @@ export default function LandingPageGenerator() {
             </div>
             
             <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-              <p>&copy; 2024 Landing Page Bolt. All rights reserved.</p>
+              <p dir="rtl">&copy; 2024 Landing Page Bolt. جميع الحقوق محفوظة.</p>
             </div>
           </div>
         </footer>
