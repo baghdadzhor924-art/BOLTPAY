@@ -96,9 +96,9 @@ export default function HeroSlider({
   }
 
   return (
-    <div className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl shadow-2xl">
+    <div className="relative h-screen overflow-hidden">
       {/* Slides */}
-      <div className="relative h-full">
+      <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -116,22 +116,22 @@ export default function HeroSlider({
             />
             
             {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Content Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center text-white px-6 max-w-4xl">
+      <div className="absolute inset-0 flex items-center justify-center z-10">
+        <div className="text-center text-white px-6 max-w-6xl">
           <motion.h1
             key={`title-${currentSlide}`}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
           >
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent drop-shadow-2xl">
               AI-Powered Pages, Ready to Sell
             </span>
           </motion.h1>
@@ -141,7 +141,7 @@ export default function HeroSlider({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="text-xl md:text-2xl mb-8 opacity-90 max-w-3xl mx-auto"
+            className="text-xl md:text-3xl mb-12 opacity-95 max-w-4xl mx-auto font-light"
           >
             {slides[currentSlide].subtitle}
           </motion.p>
@@ -154,11 +154,11 @@ export default function HeroSlider({
           >
             <button
               data-route="generate"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white px-10 py-5 rounded-xl font-semibold text-xl hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-105"
             >
               Start Creating Now
             </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-gray-900 transition-all duration-200">
+            <button className="border-2 border-white/80 text-white px-10 py-5 rounded-xl font-semibold text-xl hover:bg-white hover:text-gray-900 transition-all duration-300 backdrop-blur-sm">
               Watch Demo
             </button>
           </motion.div>
@@ -171,14 +171,14 @@ export default function HeroSlider({
           {/* Previous/Next Arrows */}
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110"
+            className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full backdrop-blur-md transition-all duration-300 hover:scale-110 z-20"
             aria-label="Previous slide"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110"
+            className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-4 rounded-full backdrop-blur-md transition-all duration-300 hover:scale-110 z-20"
             aria-label="Next slide"
           >
             <ChevronRight className="w-6 h-6" />
@@ -187,22 +187,22 @@ export default function HeroSlider({
           {/* Play/Pause Button */}
           <button
             onClick={togglePlayPause}
-            className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-200"
+            className="absolute top-6 right-6 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-md transition-all duration-300 z-20"
             aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </button>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4 z-20">
             {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                className={`w-4 h-4 rounded-full transition-all duration-300 ${
                   index === currentSlide
-                    ? 'bg-white scale-125'
-                    : 'bg-white/50 hover:bg-white/70'
+                    ? 'bg-white scale-125 shadow-lg'
+                    : 'bg-white/60 hover:bg-white/80'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
@@ -212,7 +212,7 @@ export default function HeroSlider({
       )}
 
       {/* Slide Counter */}
-      <div className="absolute bottom-6 right-6 bg-black/30 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
+      <div className="absolute bottom-8 right-8 bg-black/40 text-white px-4 py-2 rounded-full text-sm backdrop-blur-md z-20">
         {currentSlide + 1} / {slides.length}
       </div>
     </div>

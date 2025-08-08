@@ -18,46 +18,52 @@ interface SidebarProps {
 
 const menuItems = [
   {
-    label: 'Home',
+    label: 'Home', 
     route: '/home',
     id: 'home',
     icon: <Home className="w-5 h-5" />
   },
   {
-    label: 'New Landing Page',
+    label: 'Generate Page',
     route: '/generate',
     id: 'generate',
     icon: <Wand2 className="w-5 h-5" />
   },
   {
-    label: 'New Store',
+    label: 'My Store',
     route: '/store',
     id: 'store',
     icon: <Store className="w-5 h-5" />
   },
   {
-    label: 'Orders',
-    route: '/orders',
-    id: 'orders',
-    icon: <ShoppingCart className="w-5 h-5" />
-  },
-  {
-    label: 'AI Insights',
-    route: '/insights',
-    id: 'insights',
+    label: 'Pixel Tracking',
+    route: '/pixel-tracking',
+    id: 'pixel_tracking',
     icon: <Brain className="w-5 h-5" />
   },
   {
-    label: 'Messages',
-    route: '/messages',
-    id: 'messages',
+    label: 'Custom Domain',
+    route: '/custom-domain',
+    id: 'custom_domain',
+    icon: <Settings className="w-5 h-5" />
+  },
+  {
+    label: 'Chatbot',
+    route: '/chatbot',
+    id: 'chatbot',
     icon: <MessageCircle className="w-5 h-5" />
   },
   {
-    label: 'Settings',
-    route: '/settings',
-    id: 'settings',
-    icon: <Settings className="w-5 h-5" />
+    label: 'WhatsApp',
+    route: '/whatsapp',
+    id: 'whatsapp',
+    icon: <MessageCircle className="w-5 h-5" />
+   },
+   {
+    label: 'Messenger',
+    route: '/messenger',
+    id: 'messenger',
+    icon: <MessageCircle className="w-5 h-5" />
   }
 ];
 
