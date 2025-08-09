@@ -5,7 +5,7 @@ import {
   Zap, Shield, Globe, Star, Users, TrendingUp, Code, Palette,
   ChevronDown, Play, BookOpen, HelpCircle, Mail, Wand2
 } from 'lucide-react';
-import { LandingPageService } from '../services/landingPageService';
+import { LandingPageGeneratorService } from '../services/landingPageGeneratorService';
 import { GenerationOptions, GenerationResult } from '../types';
 import Sidebar from './Sidebar';
 import HeroSlider from './HeroSlider';
@@ -27,49 +27,12 @@ export default function LandingPageGenerator() {
   const [activeSection, setActiveSection] = useState('home');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
-  const landingPageService = LandingPageService.getInstance();
+  const landingPageService = LandingPageGeneratorService.getInstance();
   const generatorRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const templatesRef = useRef<HTMLDivElement>(null);
   const pricingRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
-
-  // Market-based template mapping
-  const marketTemplates = {
-    ecommerce: 'modern',
-    saas: 'minimal',
-    luxury: 'elegant',
-    fitness: 'bold',
-    tech: 'modern',
-    fashion: 'elegant',
-    food: 'bold',
-    education: 'minimal'
-  };
-
-  const targetMarkets = [
-    { value: 'us', label: '🇺🇸 United States' },
-    { value: 'uk', label: '🇬🇧 United Kingdom' },
-    { value: 'ca', label: '🇨🇦 Canada' },
-    { value: 'au', label: '🇦🇺 Australia' },
-    { value: 'de', label: '🇩🇪 Germany' },
-    { value: 'fr', label: '🇫🇷 France' },
-    { value: 'es', label: '🇪🇸 Spain' },
-    { value: 'it', label: '🇮🇹 Italy' },
-    { value: 'nl', label: '🇳🇱 Netherlands' },
-    { value: 'se', label: '🇸🇪 Sweden' },
-    { value: 'no', label: '🇳🇴 Norway' },
-    { value: 'dk', label: '🇩🇰 Denmark' },
-    { value: 'fi', label: '🇫🇮 Finland' },
-    { value: 'jp', label: '🇯🇵 Japan' },
-    { value: 'kr', label: '🇰🇷 South Korea' },
-    { value: 'sg', label: '🇸🇬 Singapore' },
-    { value: 'ae', label: '🇦🇪 UAE' },
-    { value: 'sa', label: '🇸🇦 Saudi Arabia' },
-    { value: 'br', label: '🇧🇷 Brazil' },
-    { value: 'mx', label: '🇲🇽 Mexico' }
-  ];
-
-  const targetCountries = targetMarkets;
 
   const targetAudiences = [
     { value: 'mena', label: 'Middle East & North Africa' },
@@ -385,12 +348,42 @@ export default function LandingPageGenerator() {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={options.includeSocialProof}
-                      onChange={(e) => setOptions({ ...options, includeSocialProof: e.target.checked })}
+                      checked={options.includeUpsells}
+                      onChange={(e) => setOptions({ ...options, includeUpsells: e.target.checked })}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       disabled={isGenerating}
                     />
-                    <span className="ml-2 text-sm text-gray-700">Include Social Proof</span>
+                    <span className="ml-2 text-sm text-gray-700">Include Upsell Products</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={options.includeTrustBadges}
+                      onChange={(e) => setOptions({ ...options, includeTrustBadges: e.target.checked })}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      disabled={isGenerating}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Include Trust Badges</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={options.enableTracking}
+                      onChange={(e) => setOptions({ ...options, enableTracking: e.target.checked })}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      disabled={isGenerating}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Enable Analytics Tracking</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={options.shopifyIntegration}
+                      onChange={(e) => setOptions({ ...options, shopifyIntegration: e.target.checked })}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      disabled={isGenerating}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Shopify Integration</span>
                   </label>
                 </div>
 
@@ -443,16 +436,27 @@ export default function LandingPageGenerator() {
                   <div className="grid md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-sm text-gray-600">Product</div>
-                      <div className="font-semibold text-gray-900">{result.productTitle}</div>
+                      <div className="font-semibold text-gray-900">{result.productData.title}</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-sm text-gray-600">Generation Time</div>
                       <div className="font-semibold text-gray-900">{result.generationTime}ms</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-sm text-gray-600">Data Source</div>
+                      <div className="text-sm text-gray-600">Validation Score</div>
+                      <div className="font-semibold text-gray-900">{(result.validationScore * 100).toFixed(1)}%</div>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600">Media Processed</div>
+                      <div className="font-semibold text-gray-900">{result.mediaProcessed} images</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600">SEO Optimized</div>
                       <div className="font-semibold text-gray-900">
-                        {result.isRealData ? 'Real Data' : 'Mock Data'}
+                        {result.seoData ? 'Yes' : 'No'}
                       </div>
                     </div>
                   </div>
@@ -472,7 +476,41 @@ export default function LandingPageGenerator() {
                       <Download className="w-4 h-4 mr-2" />
                       Download HTML
                     </button>
+                    {result.integrations.shopify && (
+                      <a
+                        href={result.integrations.shopify.productUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      >
+                        <Globe className="w-4 h-4 mr-2" />
+                        View in Shopify
+                      </a>
+                    )}
                   </div>
+
+                  {/* Warnings and Errors */}
+                  {result.warnings && result.warnings.length > 0 && (
+                    <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-yellow-800 mb-2">Warnings:</h4>
+                      <ul className="list-disc list-inside text-yellow-700 text-sm">
+                        {result.warnings.map((warning, index) => (
+                          <li key={index}>{warning}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {result.errors && result.errors.length > 0 && (
+                    <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-red-800 mb-2">Errors:</h4>
+                      <ul className="list-disc list-inside text-red-700 text-sm">
+                        {result.errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   {/* HTML Preview */}
                   <div className="mt-6">
