@@ -11,6 +11,8 @@ import Sidebar from './Sidebar';
 import HeroSlider from './HeroSlider';
 
 export default function LandingPageGenerator() {
+  const [url, setUrl] = useState('');
+  const [targetAudience, setTargetAudience] = useState('');
   const [targetMarket, setTargetMarket] = useState('ecommerce');
   const [options, setOptions] = useState<GenerationOptions>({
     template: 'modern',
@@ -68,6 +70,12 @@ export default function LandingPageGenerator() {
   ];
 
   const targetCountries = targetMarkets;
+
+  const targetAudiences = [
+    { value: 'mena', label: 'Middle East & North Africa' },
+    { value: 'america', label: 'America' },
+    { value: 'europe', label: 'Europe' }
+  ];
 
   const testimonials = [
     {
@@ -148,8 +156,13 @@ export default function LandingPageGenerator() {
   };
 
   const handleGenerate = async () => {
-    if (!targetMarket) {
-      setError('Please select a target country');
+    if (!url.trim()) {
+      setError('Please enter a product URL');
+      return;
+    }
+    
+    if (!targetAudience) {
+      setError('Please select a target audience');
       return;
     }
 
@@ -158,9 +171,7 @@ export default function LandingPageGenerator() {
     setResult(null);
 
     try {
-      // Generate a mock URL based on the selected market
-      const mockUrl = `https://example.com/product-${targetMarket}`;
-      const generationResult = await landingPageService.generateLandingPage(mockUrl, options);
+      const generationResult = await landingPageService.generateLandingPage(url, options);
       setResult(generationResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -293,6 +304,49 @@ export default function LandingPageGenerator() {
               className="max-w-4xl mx-auto"
             >
               <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-200">
+                {/* URL Input */}
+                <div className="mb-6">
+                  <label htmlFor="productUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    Product URL
+                  </label>
+                  <input
+                    id="productUrl"
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://example.com/product-page"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    disabled={isGenerating}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Enter the URL of the product you want to create a landing page for
+                  </p>
+                </div>
+
+                {/* Target Audience Selection */}
+                <div className="mb-6">
+                  <label htmlFor="targetAudience" className="block text-sm font-medium text-gray-700 mb-2">
+                    Target Audience
+                  </label>
+                  <select
+                    id="targetAudience"
+                    value={targetAudience}
+                    onChange={(e) => setTargetAudience(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    disabled={isGenerating}
+                  >
+                    <option value="">Select target audience</option>
+                    {targetAudiences.map((audience) => (
+                      <option key={audience.value} value={audience.value}>
+                        {audience.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Choose your primary target audience for optimized content
+                  </p>
+                </div>
+
                 {/* Target Market Selection */}
                 <div className="mb-6">
                   <label htmlFor="targetCountry" className="block text-sm font-medium text-gray-700 mb-2">
@@ -380,7 +434,7 @@ export default function LandingPageGenerator() {
                 {/* Generate Button */}
                 <button
                   onClick={handleGenerate}
-                  disabled={isGenerating || !targetMarket}
+                  disabled={isGenerating || !url.trim() || !targetAudience}
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
                 >
                   {isGenerating ? (
