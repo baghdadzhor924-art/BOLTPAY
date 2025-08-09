@@ -125,6 +125,7 @@ export default function LandingPageGenerator() {
       verified: true
     }
   ];
+  
   const scrollToSection = (sectionRef: React.RefObject<HTMLDivElement>, sectionName: string) => {
     setActiveSection(sectionName);
     sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -144,7 +145,6 @@ export default function LandingPageGenerator() {
       // For now, just log the navigation
       console.log(`Would navigate to ${route}`);
     }
-  };
   };
 
   const handleGenerate = async () => {
