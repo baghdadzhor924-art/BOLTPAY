@@ -1,21 +1,24 @@
 import { ScrapedProduct } from '../types';
 
 export async function scrapeProductData(url: string, useRealData: boolean): Promise<ScrapedProduct> {
-  if (!useRealData) {
+  // Always try to use real data first if we have API keys
+  const serpApiKey = import.meta.env.VITE_SERP_API_KEY;
+  const shouldUseRealData = useRealData && serpApiKey && serpApiKey !== 'your_actual_serp_key_here';
+  
+  if (!shouldUseRealData) {
     console.log('📝 Using mock product data for testing');
     return getMockProductData(url);
   }
 
   try {
-    // Try to use BrowseAI if API key is available
-    const browseAiKey = import.meta.env.VITE_BROWSE_AI_API_KEY;
+    console.log('🌐 Attempting to scrape real product data...');
     
-    if (browseAiKey && browseAiKey !== 'your_actual_browse_ai_key_here') {
-      return await scrapeWithBrowseAI(url, browseAiKey);
+    // Try SerpAPI for product search
+    if (serpApiKey) {
+      return await scrapeWithSerpAPI(url, serpApiKey);
     }
     
-    // Fallback to basic scraping
-    return await basicScrape(url);
+    throw new Error('No valid API keys available');
     
   } catch (error) {
     console.warn('⚠️ Scraping failed, using mock data:', error);
@@ -23,8 +26,114 @@ export async function scrapeProductData(url: string, useRealData: boolean): Prom
   }
 }
 
-async function scrapeWithBrowseAI(url: string, apiKey: string): Promise<ScrapedProduct> {
-  const response = await fetch('https://api.browse.ai/v2/robots/bulk', {
+async function scrapeWithSerpAPI(url: string, apiKey: string): Promise<ScrapedProduct> {
+  try {
+    // Extract product name from URL for search
+    const productName = extractProductNameFromUrl(url);
+    console.log(`🔍 Searching for: ${productName}`);
+    
+    const response = await fetch(
+      `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(productName)}&api_key=${apiKey}&num=5`,
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`SerpAPI error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('📊 SerpAPI response:', data);
+    
+    if (data.error) {
+      throw new Error(`SerpAPI error: ${data.error}`);
+    }
+
+    const results = data.shopping_results || [];
+    if (results.length === 0) {
+      throw new Error('No products found in search results');
+    }
+
+    const firstResult = results[0];
+    console.log('✅ Found product:', firstResult.title);
+
+    return {
+      title: firstResult.title || productName,
+      description: firstResult.snippet || 'High-quality product with excellent features',
+      price: firstResult.price || '$99.99',
+      images: [
+        firstResult.thumbnail,
+        ...(firstResult.images || [])
+      ].filter(Boolean).slice(0, 3),
+      features: extractFeatures(firstResult.snippet || firstResult.title || ''),
+      url
+    };
+    
+  } catch (error) {
+    console.error('❌ SerpAPI scraping failed:', error);
+    throw error;
+  }
+}
+
+function extractFeatures(text: string): string[] {
+  const features: string[] = [];
+  const featureKeywords = [
+    'premium', 'quality', 'durable', 'lightweight', 'waterproof',
+    'wireless', 'bluetooth', 'rechargeable', 'portable', 'professional',
+    'advanced', 'smart', 'digital', 'automatic', 'adjustable'
+  ];
+
+  const words = text.toLowerCase().split(/\s+/);
+  
+  featureKeywords.forEach(keyword => {
+    if (words.some(word => word.includes(keyword))) {
+      features.push(keyword.charAt(0).toUpperCase() + keyword.slice(1));
+    }
+  });
+
+  // Add default features if none found
+  if (features.length === 0) {
+    features.push('High Quality', 'Reliable', 'User Friendly', 'Great Value');
+  }
+
+  return features.slice(0, 5);
+}
+
+function extractProductNameFromUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/').filter(part => part.length > 0);
+    
+    // Extract from common e-commerce URL patterns
+    if (url.includes('amazon.com')) {
+      const dpIndex = pathParts.findIndex(part => part === 'dp');
+      if (dpIndex > 0) {
+        return pathParts[dpIndex - 1].replace(/-/g, ' ');
+      }
+    }
+    
+    if (url.includes('ebay.com')) {
+      const itmIndex = pathParts.findIndex(part => part === 'itm');
+      if (itmIndex > 0) {
+        return pathParts[itmIndex - 1].replace(/-/g, ' ');
+      }
+    }
+
+    // Generic extraction from URL path
+    const lastPart = pathParts[pathParts.length - 1] || urlObj.hostname;
+    return lastPart
+      .replace(/[-_]/g, ' ')
+      .replace(/\.(html|php|asp|jsp)$/i, '')
+      .replace(/\b\w/g, l => l.toUpperCase());
+
+  } catch {
+    return 'Product Search';
+  }
+}
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

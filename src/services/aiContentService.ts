@@ -433,12 +433,157 @@ Always:
   private calculateDiscount(current: string, original: string): string {
     const currentPrice = parseFloat(current.replace(/[^0-9.]/g, ''));
     const originalPrice = parseFloat(original.replace(/[^0-9.]/g, ''));
+    console.log('🤖 Starting AI content generation...');
     
     if (originalPrice > currentPrice) {
-      const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    if (groqApiKey && groqApiKey.trim() && groqApiKey !== 'your_actual_groq_key_here') {
+      console.log('🔑 Using Groq API for content generation');
       return `${discount}% OFF`;
     }
     
+    console.log('📝 Using mock content generation');
     return '';
   }
+}
+  try {
+    const prompt = buildPrompt(product, language);
+    console.log('📤 Sending request to Groq API...');
+    
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'mixtral-8x7b-32768',
+        messages: [
+          {
+            role: 'system',
+            content: getSystemPrompt(language)
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Groq API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Groq API response received');
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response format from Groq API');
+    }
+
+    const generatedText = data.choices[0].message.content;
+    return parseAIResponse(generatedText, product, language);
+    
+  } catch (error) {
+    console.error('❌ Groq API failed:', error);
+    throw error;
+  }
+}
+
+function buildPrompt(product: any, language: string): string {
+  const isArabic = language === 'ar';
+  
+  if (isArabic) {
+    return `اكتب محتوى صفحة هبوط مقنع لهذا المنتج:
+
+اسم المنتج: ${product.title}
+الوصف: ${product.description}
+السعر: ${product.price}
+المميزات: ${product.features?.join(', ') || 'مميزات عالية الجودة'}
+
+اكتب المحتوى التالي باللغة العربية:
+1. عنوان رئيسي جذاب (يركز على الفوائد)
+2. عنوان فرعي داعم
+3. نص دعوة للعمل
+4. وصف مقنع للمنتج
+5. قائمة بـ 5 مميزات رئيسية
+6. 3 شهادات عملاء واقعية
+
+اجعل المحتوى مقنعاً ومركزاً على الفوائد وليس المميزات فقط.`;
+  }
+  
+  return `Create compelling landing page content for this product:
+
+Product Name: ${product.title}
+Description: ${product.description}
+Price: ${product.price}
+Features: ${product.features?.join(', ') || 'High-quality features'}
+
+Generate the following content in English:
+1. Compelling headline (benefit-focused)
+2. Supporting subheadline
+3. Call-to-action text
+4. Persuasive product description
+5. List of 5 key features
+6. 3 realistic customer testimonials
+
+Focus on benefits over features and make it conversion-optimized.`;
+}
+
+function getSystemPrompt(language: string): string {
+  if (language === 'ar') {
+    return `أنت كاتب محتوى خبير متخصص في صفحات الهبوط عالية التحويل للأسواق العربية.
+
+اكتب دائماً:
+- ركز على الفوائد وليس المميزات فقط
+- استخدم لغة عاطفية مناسبة للثقافة العربية
+- أضف عناصر الثقة والدليل الاجتماعي
+- اخلق شعوراً بالإلحاح دون أن تكون مزعجاً
+- اكتب باللغة العربية الفصحى المبسطة`;
+  }
+  
+  return `You are an expert copywriter specializing in high-converting landing pages.
+
+Always:
+- Focus on benefits over features
+- Use emotional triggers appropriate for the target audience
+- Include social proof and trust elements
+- Create urgency without being pushy
+- Write in clear, persuasive language`;
+}
+
+function parseAIResponse(text: string, product: any, language: string): AIGeneratedContent {
+  // Try to extract structured content from the AI response
+  const lines = text.split('\n').filter(line => line.trim());
+  
+  // Default content structure
+  const defaultContent = generateMockContent(product, language);
+  
+  // Extract headline (usually the first substantial line)
+  const headline = lines.find(line => line.length > 10 && !line.includes(':')) || defaultContent.headline;
+  
+  // Extract features (look for numbered lists or bullet points)
+  const features = [];
+  for (const line of lines) {
+    if (line.match(/^\d+\./) || line.match(/^[-•*]/)) {
+      const feature = line.replace(/^\d+\.\s*/, '').replace(/^[-•*]\s*/, '').trim();
+      if (feature.length > 5) {
+        features.push(feature);
+      }
+    }
+  }
+  
+  return {
+    headline: headline.replace(/^["']|["']$/g, '').trim(),
+    subheadline: lines[1] || defaultContent.subheadline,
+    description: lines.slice(2, 5).join(' ') || defaultContent.description,
+    callToAction: language === 'ar' ? 'اطلب الآن' : 'Order Now',
+    features: features.length > 0 ? features.slice(0, 5) : defaultContent.features,
+    benefits: defaultContent.benefits,
+    testimonials: defaultContent.testimonials,
+    socialProof: defaultContent.socialProof
+  };
 }

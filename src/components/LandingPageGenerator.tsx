@@ -139,14 +139,25 @@ export default function LandingPageGenerator() {
       return;
     }
 
+    console.log('🎯 Starting generation with:', { url, targetAudience, options });
+
     setIsGenerating(true);
     setError(null);
     setResult(null);
 
     try {
+      // Update options with selected values
+      const generationOptions = {
+        ...options,
+        targetAudience: targetAudience as 'mena' | 'america' | 'europe'
+      };
+      
+      console.log('📋 Final options:', generationOptions);
       const generationResult = await landingPageService.generateLandingPage(url, options);
+      console.log('🎉 Generation completed:', generationResult);
       setResult(generationResult);
     } catch (err) {
+      console.error('❌ Generation error:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
       setIsGenerating(false);
