@@ -254,7 +254,7 @@ Return ONLY valid JSON format. No additional text or explanations.`;
       console.log('✅ Successfully parsed AI response');
       
       return this.structureAdvancedContent(parsed, product, options, media);
-    } catch {
+    } catch (error) {
       console.warn('⚠️ Failed to parse AI response as JSON, using fallback extraction:', error);
       return this.extractAdvancedContentFromText(text, product, options, media);
     }
@@ -517,12 +517,13 @@ Return ONLY valid JSON format. No additional text or explanations.`;
   }
 
   private getReviewTemplates(audience: string, language: string) {
-        ar: [
-          { name: 'أحمد حسن', rating: 5, comment: 'جودة ممتازة وتوصيل سريع. أنصح به بشدة لجميع العائلات!', verified: true },
-          { name: 'فاطمة الزهراء', rating: 5, comment: 'منتج رائع! يستحق كل قرش. عائلتي كلها تحبه.', verified: true },
-          { name: 'عمر خليل', rating: 4, comment: 'قيمة جيدة مقابل المال. خدمة العملاء كانت مفيدة جداً.', verified: true }
-        ]
-      },
+    const enhancedTemplates = {
+      mena: {
+        en: [
+          { name: 'Ahmed Hassan', rating: 5, comment: 'Excellent quality and fast delivery. Highly recommend for all families!', verified: true },
+          { name: 'Fatima Al-Zahra', rating: 5, comment: 'Amazing product! Worth every penny. My whole family loves it.', verified: true },
+          { name: 'Omar Khalil', rating: 4, comment: 'Good value for money. Customer service was very helpful.', verified: true }
+        ],
         ar: [
           { name: 'أحمد حسن', rating: 5, comment: 'جودة ممتازة وتوصيل سريع. أنصح به بشدة لجميع العائلات!', verified: true },
           { name: 'فاطمة الزهراء', rating: 5, comment: 'منتج رائع! يستحق كل قرش. عائلتي كلها تحبه.', verified: true },
@@ -643,5 +644,12 @@ Return ONLY valid JSON format. No additional text or explanations.`;
   private calculateDiscount(current: string, original: string): string {
     const currentPrice = parseFloat(current.replace(/[^0-9.]/g, ''));
     const originalPrice = parseFloat(original.replace(/[^0-9.]/g, ''));
+    
+    if (originalPrice > currentPrice) {
+      const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+      return `${discount}%`;
+    }
+    
+    return '0%';
   }
 }
