@@ -96,13 +96,13 @@ const apiKeys: ApiKey[] = [
 
   // AI Content Generation
   {
-    key: 'VITE_GROQ_API_KEY',
-    name: 'Groq API Key',
-    description: 'For AI content generation using Mixtral model',
+    key: 'VITE_OPENAI_API_KEY',
+    name: 'OpenAI API Key',
+    description: 'For AI content generation using GPT-4 model',
     icon: <Settings className="w-5 h-5" />,
     category: 'AI Services',
     required: true,
-    placeholder: 'Enter your Groq API key'
+    placeholder: 'Enter your OpenAI API key'
   },
 
   // E-commerce Integration

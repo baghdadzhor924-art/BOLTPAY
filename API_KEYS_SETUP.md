@@ -12,9 +12,9 @@ This application requires several API keys to function properly. Follow the step
 2. Go to your dashboard
 3. Copy your API key from the settings
 
-### 2. Groq API Key
-**Purpose**: AI content generation for landing pages
-**Get it from**: https://console.groq.com/
+### 2. OpenAI API Key
+**Purpose**: AI content generation for landing pages using GPT-4
+**Get it from**: https://platform.openai.com/api-keys
 **Steps**:
 1. Sign up for a free account
 2. Go to API Keys section
@@ -46,8 +46,8 @@ This application requires several API keys to function properly. Follow the step
 # BrowseAI API Key
 VITE_BROWSE_AI_API_KEY=your_actual_browse_ai_key_here
 
-# Groq API Key
-VITE_GROQ_API_KEY=your_actual_groq_key_here
+# OpenAI API Key
+VITE_OPENAI_API_KEY=your_actual_openai_key_here
 
 # SerpAPI Key
 VITE_SERP_API_KEY=your_actual_serp_key_here
@@ -78,7 +78,7 @@ The app will fall back to mock data if API keys are not provided, but for full f
 ## Free Tier Limits
 
 - **BrowseAI**: Limited free tier available
-- **Groq**: Generous free tier with Mixtral model
+- **OpenAI**: Pay-per-use pricing with GPT-4
 - **SerpAPI**: 100 searches/month free
 - **Remove Background**: Limited free tier
 

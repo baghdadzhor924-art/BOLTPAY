@@ -94,6 +94,7 @@ export interface LandingPageContent {
     verified: boolean;
     date: string;
     avatar?: string;
+    location?: string;
   }>;
   trustBadges: string[];
   upsells: Array<{
@@ -114,6 +115,13 @@ export interface LandingPageContent {
     googleAnalytics?: string;
     customEvents: string[];
   };
+  socialProof?: {
+    totalCustomers: number;
+    averageRating: number;
+    countriesServed: number;
+    monthlyUsers: number;
+  };
+  guarantee?: string;
 }
 
 export interface GenerationOptions {

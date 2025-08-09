@@ -1,10 +1,10 @@
 import { ProductData, LandingPageContent, GenerationOptions, ProcessedMedia, APIResponse } from '../types';
 
 export class AIContentService {
-  private groqApiKey: string;
+  private openaiApiKey: string;
 
   constructor() {
-    this.groqApiKey = import.meta.env.VITE_GROQ_API_KEY || '';
+    this.openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || '';
   }
 
   async generateContent(
@@ -15,8 +15,8 @@ export class AIContentService {
     try {
       console.log('🤖 Generating AI content...');
 
-      if (this.groqApiKey && this.groqApiKey !== 'your_actual_groq_key_here') {
-        return await this.generateWithGroq(product, options, media);
+      if (this.openaiApiKey && this.openaiApiKey !== 'your_openai_api_key_here') {
+        return await this.generateWithOpenAI(product, options, media);
       }
 
       // Fallback to mock content
@@ -35,109 +35,188 @@ export class AIContentService {
     }
   }
 
-  private async generateWithGroq(
+  private async generateWithOpenAI(
     product: ProductData,
     options: GenerationOptions,
     media: ProcessedMedia[]
   ): Promise<APIResponse<LandingPageContent>> {
     try {
-      const prompt = this.buildPrompt(product, options);
+      const prompt = this.buildAdvancedPrompt(product, options, media);
       
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      console.log('📤 Sending request to OpenAI GPT-4...');
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.groqApiKey}`
+          'Authorization': `Bearer ${this.openaiApiKey}`
         },
         body: JSON.stringify({
-          model: 'mixtral-8x7b-32768',
+          model: 'gpt-4',
           messages: [
             {
               role: 'system',
-              content: this.getSystemPrompt(options)
+              content: this.getAdvancedSystemPrompt(options)
             },
             {
               role: 'user',
               content: prompt
             }
           ],
-          temperature: 0.7,
-          max_tokens: 2000
+          temperature: 0.8,
+          max_tokens: 3000,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0
         })
       });
 
       if (!response.ok) {
-        throw new Error(`Groq API error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
+      console.log('✅ OpenAI response received');
+      
       const generatedText = data.choices[0].message.content;
       
       // Parse the AI response into structured content
-      const content = this.parseAIResponse(generatedText, product, options, media);
+      const content = this.parseAdvancedAIResponse(generatedText, product, options, media);
       
       return {
         success: true,
         data: content,
         usage: {
-          tokens: data.usage?.total_tokens || 0
+          tokens: data.usage?.total_tokens || 0,
+          cost: this.calculateCost(data.usage?.total_tokens || 0)
         }
       };
 
     } catch (error) {
-      throw new Error(`Groq content generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('❌ OpenAI API error:', error);
+      throw new Error(`OpenAI content generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  private buildPrompt(product: ProductData, options: GenerationOptions): string {
+  private buildAdvancedPrompt(product: ProductData, options: GenerationOptions, media: ProcessedMedia[]): string {
     const audienceContext = this.getAudienceContext(options.targetAudience);
+    const mediaContext = media.map(m => `Image analysis: ${m.analysis.labels.join(', ')}`).join('\n');
     
-    return `Create compelling landing page content for this product:
+    return `Create a comprehensive, high-converting landing page content for this product:
 
 PRODUCT DETAILS:
 - Title: ${product.title}
 - Description: ${product.description}
 - Price: ${product.price}
+- Original Price: ${product.originalPrice || 'N/A'}
 - Brand: ${product.brand}
 - Category: ${product.category}
 - Rating: ${product.rating}/5 (${product.reviewCount} reviews)
 - Features: ${product.features.join(', ')}
+- Availability: ${product.availability}
+- Shipping: ${product.shipping.free ? 'Free shipping' : product.shipping.cost || 'Standard shipping'}
+
+MEDIA ANALYSIS:
+${mediaContext}
 
 TARGET AUDIENCE: ${audienceContext}
 LANGUAGE: ${options.language}
+INCLUDE REVIEWS: ${options.includeReviews}
+INCLUDE SOCIAL PROOF: ${options.includeSocialProof}
+INCLUDE UPSELLS: ${options.includeUpsells}
 
-Generate the following sections:
-1. Hero headline (compelling, benefit-focused)
-2. Hero subheadline (supporting detail)
-3. Call-to-action text
-4. Product description (persuasive, benefit-focused)
-5. Key features list (5-7 items)
-6. Customer testimonials (3-5 realistic testimonials)
-7. Trust elements
-8. Urgency/scarcity messaging
+REQUIREMENTS:
+Generate a complete landing page content structure with the following sections. Return ONLY valid JSON format:
 
-Format as JSON with clear sections.`;
+{
+  "hero": {
+    "headline": "Compelling, benefit-focused headline (max 60 chars)",
+    "subheadline": "Supporting detail that builds desire (max 120 chars)",
+    "cta": "Action-oriented button text (max 20 chars)"
+  },
+  "product": {
+    "description": "Persuasive, benefit-focused description (200-300 words)",
+    "features": ["5-7 key features with benefits"],
+    "specifications": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  },
+  "pricing": {
+    "urgency": "Scarcity/urgency message",
+    "guarantee": "Money-back guarantee text"
+  },
+  "reviews": [
+    {
+      "name": "Realistic customer name",
+      "rating": 4-5,
+      "comment": "Authentic review (50-100 words)",
+      "verified": true,
+      "location": "City, Country"
+    }
+  ],
+  "socialProof": {
+    "totalCustomers": 10000,
+    "averageRating": 4.8,
+    "countriesServed": 50,
+    "monthlyUsers": 25000
+  },
+  "upsells": [
+    {
+      "title": "Complementary product title",
+      "description": "Brief description",
+      "price": "$XX.XX"
+    }
+  ],
+  "trustElements": [
+    "Trust badge 1",
+    "Trust badge 2",
+    "Trust badge 3"
+  ]
+}
+
+Make the content highly persuasive, culturally appropriate for ${options.targetAudience}, and optimized for conversions.`;
   }
 
-  private getSystemPrompt(options: GenerationOptions): string {
+  private getAdvancedSystemPrompt(options: GenerationOptions): string {
     const audienceStyles = {
       mena: 'Use rich, emotional language with emphasis on value and family benefits. Include cultural sensitivity for Middle Eastern and North African markets.',
       america: 'Focus on convenience, quality, and social proof. Use direct, benefit-focused language with trust indicators.',
       europe: 'Emphasize quality, sustainability, and craftsmanship. Use sophisticated, informative language with attention to detail.'
     };
 
-    return `You are an expert copywriter specializing in high-converting landing pages for ${options.targetAudience} markets. 
+    return `You are a world-class conversion copywriter and marketing expert specializing in high-converting landing pages for ${options.targetAudience} markets.
 
-Style Guidelines:
+EXPERTISE:
+- 15+ years in direct response marketing
+- Specialized in e-commerce conversion optimization
+- Expert in psychological triggers and persuasion techniques
+- Deep understanding of cultural nuances across global markets
+
+STYLE GUIDELINES FOR ${options.targetAudience.toUpperCase()}:
 ${audienceStyles[options.targetAudience]}
 
-Always:
-- Focus on benefits over features
-- Use emotional triggers appropriate for the target audience
-- Include social proof and trust elements
-- Create urgency without being pushy
-- Write in ${options.language === 'ar' ? 'Arabic' : 'English'} language
-- Ensure cultural appropriateness for the target region`;
+CONVERSION PRINCIPLES:
+1. Lead with benefits, support with features
+2. Use emotional triggers appropriate for the target culture
+3. Build trust through social proof and guarantees
+4. Create urgency without being manipulative
+5. Address objections proactively
+6. Use power words and action-oriented language
+7. Ensure cultural sensitivity and appropriateness
+8. Write in ${options.language === 'ar' ? 'Arabic' : 'English'} language
+9. Optimize for mobile-first reading patterns
+10. Include specific, measurable benefits
+
+PSYCHOLOGICAL TRIGGERS TO USE:
+- Scarcity and urgency
+- Social proof and authority
+- Reciprocity and value
+- Fear of missing out (FOMO)
+- Trust and credibility indicators
+- Emotional storytelling
+
+Return ONLY valid JSON format. No additional text or explanations.`;
   }
 
   private getAudienceContext(audience: string): string {
@@ -150,28 +229,45 @@ Always:
     return contexts[audience as keyof typeof contexts] || contexts.america;
   }
 
-  private parseAIResponse(
+  private parseAdvancedAIResponse(
     text: string,
     product: ProductData,
     options: GenerationOptions,
     media: ProcessedMedia[]
   ): LandingPageContent {
     try {
-      // Try to parse as JSON first
-      const parsed = JSON.parse(text);
-      return this.structureContent(parsed, product, options, media);
+      console.log('📝 Parsing OpenAI response...');
+      
+      // Clean the response text
+      let cleanedText = text.trim();
+      
+      // Remove any markdown code blocks
+      cleanedText = cleanedText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      
+      // Try to find JSON content
+      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanedText = jsonMatch[0];
+      }
+      
+      const parsed = JSON.parse(cleanedText);
+      console.log('✅ Successfully parsed AI response');
+      
+      return this.structureAdvancedContent(parsed, product, options, media);
     } catch {
-      // If JSON parsing fails, extract content manually
-      return this.extractContentFromText(text, product, options, media);
+      console.warn('⚠️ Failed to parse AI response as JSON, using fallback extraction:', error);
+      return this.extractAdvancedContentFromText(text, product, options, media);
     }
   }
 
-  private structureContent(
+  private structureAdvancedContent(
     parsed: any,
     product: ProductData,
     options: GenerationOptions,
     media: ProcessedMedia[]
   ): LandingPageContent {
+    console.log('🏗️ Structuring advanced content...');
+    
     return {
       hero: {
         headline: parsed.hero?.headline || parsed.headline || `Discover ${product.title}`,
@@ -183,7 +279,10 @@ Always:
         title: product.title,
         description: parsed.product?.description || parsed.description || product.description,
         features: parsed.product?.features || parsed.features || product.features,
-        specifications: product.specifications,
+        specifications: {
+          ...product.specifications,
+          ...(parsed.product?.specifications || {})
+        },
         media
       },
       pricing: {
@@ -191,38 +290,52 @@ Always:
         original: product.originalPrice,
         discount: product.originalPrice ? this.calculateDiscount(product.price, product.originalPrice) : undefined,
         currency: product.currency,
-        urgency: parsed.pricing?.urgency || 'Limited time offer!'
+        urgency: parsed.pricing?.urgency || 'Limited time offer!',
+        guarantee: parsed.pricing?.guarantee || '30-day money-back guarantee'
       },
-      reviews: this.generateReviews(parsed.testimonials || parsed.reviews, options),
+      reviews: this.generateAdvancedReviews(parsed.reviews || [], options),
       trustBadges: this.generateTrustBadges(options.targetAudience),
-      upsells: options.includeUpsells ? this.generateUpsells(product) : [],
+      upsells: options.includeUpsells ? (parsed.upsells || this.generateUpsells(product)) : [],
       contact: this.generateContactInfo(options),
       tracking: {
         facebookPixel: import.meta.env.VITE_FACEBOOK_PIXEL_ID,
         googleAnalytics: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
-        customEvents: ['page_view', 'add_to_cart', 'purchase']
+        customEvents: ['page_view', 'add_to_cart', 'purchase', 'scroll_depth', 'cta_click']
+      },
+      socialProof: parsed.socialProof || {
+        totalCustomers: 10000 + Math.floor(Math.random() * 50000),
+        averageRating: 4.5 + Math.random() * 0.5,
+        countriesServed: 25 + Math.floor(Math.random() * 75),
+        monthlyUsers: 5000 + Math.floor(Math.random() * 20000)
       }
     };
   }
 
-  private extractContentFromText(
+  private extractAdvancedContentFromText(
     text: string,
     product: ProductData,
     options: GenerationOptions,
     media: ProcessedMedia[]
   ): LandingPageContent {
+    console.log('📄 Extracting content from text...');
+    
     const lines = text.split('\n').filter(line => line.trim());
+    
+    // Try to extract structured information from the text
+    const headline = this.extractSection(text, ['headline', 'title']) || `Discover ${product.title}`;
+    const subheadline = this.extractSection(text, ['subheadline', 'subtitle']) || 'Premium quality product with exceptional value';
+    const description = this.extractSection(text, ['description', 'about']) || lines.slice(2, 5).join(' ') || product.description;
     
     return {
       hero: {
-        headline: lines[0] || `Discover ${product.title}`,
-        subheadline: lines[1] || 'Premium quality product with exceptional value',
+        headline,
+        subheadline,
         cta: 'Order Now',
         backgroundImage: media[0]?.optimized || 'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=1200'
       },
       product: {
         title: product.title,
-        description: lines.slice(2, 5).join(' ') || product.description,
+        description,
         features: product.features,
         specifications: product.specifications,
         media
@@ -232,14 +345,37 @@ Always:
         original: product.originalPrice,
         currency: product.currency
       },
-      reviews: this.generateReviews([], options),
+      reviews: this.generateAdvancedReviews([], options),
       trustBadges: this.generateTrustBadges(options.targetAudience),
       upsells: options.includeUpsells ? this.generateUpsells(product) : [],
       contact: this.generateContactInfo(options),
       tracking: {
-        customEvents: ['page_view', 'add_to_cart', 'purchase']
+        customEvents: ['page_view', 'add_to_cart', 'purchase', 'scroll_depth', 'cta_click']
+      },
+      socialProof: {
+        totalCustomers: 10000 + Math.floor(Math.random() * 50000),
+        averageRating: 4.5 + Math.random() * 0.5,
+        countriesServed: 25 + Math.floor(Math.random() * 75),
+        monthlyUsers: 5000 + Math.floor(Math.random() * 20000)
       }
     };
+  }
+
+  private extractSection(text: string, keywords: string[]): string | null {
+    for (const keyword of keywords) {
+      const regex = new RegExp(`${keyword}[:\\s]*([^\\n]+)`, 'i');
+      const match = text.match(regex);
+      if (match && match[1]) {
+        return match[1].trim().replace(/['"]/g, '');
+      }
+    }
+    return null;
+  }
+
+  private calculateCost(tokens: number): number {
+    // GPT-4 pricing: $0.03 per 1K prompt tokens, $0.06 per 1K completion tokens
+    // Simplified calculation assuming 50/50 split
+    return (tokens / 1000) * 0.045;
   }
 
   private generateMockContent(
@@ -247,6 +383,8 @@ Always:
     options: GenerationOptions,
     media: ProcessedMedia[]
   ): LandingPageContent {
+    console.log('🎭 Generating mock content as fallback...');
+    
     const audienceContent = this.getAudienceSpecificContent(options.targetAudience, options.language);
     
     return {
@@ -270,7 +408,7 @@ Always:
         currency: product.currency,
         urgency: audienceContent.urgency
       },
-      reviews: this.generateReviews([], options),
+      reviews: this.generateAdvancedReviews([], options),
       trustBadges: this.generateTrustBadges(options.targetAudience),
       upsells: options.includeUpsells ? this.generateUpsells(product) : [],
       contact: this.generateContactInfo(options),
@@ -278,6 +416,12 @@ Always:
         facebookPixel: import.meta.env.VITE_FACEBOOK_PIXEL_ID,
         googleAnalytics: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
         customEvents: ['page_view', 'add_to_cart', 'purchase']
+      },
+      socialProof: {
+        totalCustomers: 10000 + Math.floor(Math.random() * 50000),
+        averageRating: 4.5 + Math.random() * 0.5,
+        countriesServed: 25 + Math.floor(Math.random() * 75),
+        monthlyUsers: 5000 + Math.floor(Math.random() * 20000)
       }
     };
   }
@@ -326,15 +470,18 @@ Always:
     return langContent || content.america.en;
   }
 
-  private generateReviews(aiReviews: any[], options: GenerationOptions) {
+  private generateAdvancedReviews(aiReviews: any[], options: GenerationOptions) {
+    console.log('⭐ Generating advanced reviews...');
+    
     if (aiReviews && aiReviews.length > 0) {
       return aiReviews.map((review: any) => ({
         name: review.name || 'Anonymous Customer',
         rating: review.rating || 5,
         comment: review.comment || review.text || 'Great product!',
         verified: true,
-        date: new Date().toLocaleDateString(),
-        avatar: `https://images.pexels.com/photos/${Math.floor(Math.random() * 1000000)}/pexels-photo-${Math.floor(Math.random() * 1000000)}.jpeg?auto=compress&cs=tinysrgb&w=100`
+        date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        location: review.location || this.getRandomLocation(options.targetAudience),
+        avatar: this.generateAvatarUrl()
       }));
     }
 
@@ -344,11 +491,47 @@ Always:
     return reviewTemplates.map(template => ({
       ...template,
       date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-      avatar: `https://images.pexels.com/photos/${Math.floor(Math.random() * 1000000)}/pexels-photo-${Math.floor(Math.random() * 1000000)}.jpeg?auto=compress&cs=tinysrgb&w=100`
+      location: this.getRandomLocation(options.targetAudience),
+      avatar: this.generateAvatarUrl()
     }));
   }
 
+  private getRandomLocation(audience: string): string {
+    const locations = {
+      mena: ['Dubai, UAE', 'Riyadh, Saudi Arabia', 'Cairo, Egypt', 'Doha, Qatar', 'Kuwait City, Kuwait'],
+      america: ['New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Miami, FL'],
+      europe: ['London, UK', 'Paris, France', 'Berlin, Germany', 'Rome, Italy', 'Madrid, Spain']
+    };
+    
+    const audienceLocations = locations[audience as keyof typeof locations] || locations.america;
+    return audienceLocations[Math.floor(Math.random() * audienceLocations.length)];
+  }
+
+  private generateAvatarUrl(): string {
+    const avatarIds = [
+      '774909', '697509', '1239291', '1222271', '1181686', '1043471',
+      '415829', '1130626', '1484794', '1520760', '1674752', '1858175'
+    ];
+    const randomId = avatarIds[Math.floor(Math.random() * avatarIds.length)];
+    return `https://images.pexels.com/photos/${randomId}/pexels-photo-${randomId}.jpeg?auto=compress&cs=tinysrgb&w=100`;
+  }
+
   private getReviewTemplates(audience: string, language: string) {
+    const enhancedTemplates = {
+      mena: {
+        en: [
+          { name: 'Ahmed Hassan', rating: 5, comment: 'Exceptional quality and lightning-fast delivery! This product exceeded all my expectations. My entire family is thrilled with the purchase. The customer service team was incredibly helpful throughout the process.', verified: true },
+          { name: 'Fatima Al-Zahra', rating: 5, comment: 'Outstanding value for money! The build quality is remarkable and it arrived exactly as described. I\'ve already recommended it to all my friends and family. Will definitely be ordering more products from this seller.', verified: true },
+          { name: 'Omar Khalil', rating: 4, comment: 'Solid product with great features. The packaging was professional and secure. Customer support responded quickly to my questions. Minor improvement could be made to the user manual, but overall very satisfied.', verified: true },
+          { name: 'Layla Mansour', rating: 5, comment: 'Perfect for our family needs! The quality is premium and it works exactly as advertised. Shipping was faster than expected. This has become an essential part of our daily routine. Highly recommend!', verified: true },
+          { name: 'Youssef Ibrahim', rating: 5, comment: 'Incredible product! The attention to detail is impressive and the functionality is top-notch. Great investment for the price point. The seller provided excellent communication throughout the entire process.', verified: true }
+        ],
+        ar: [
+          { name: 'أحمد حسن', rating: 5, comment: 'جودة استثنائية وتوصيل سريع البرق! هذا المنتج فاق كل توقعاتي. عائلتي كلها سعيدة جداً بالشراء. فريق خدمة العملاء كان مفيداً بشكل لا يصدق طوال العملية.', verified: true },
+          { name: 'فاطمة الزهراء', rating: 5, comment: 'قيمة ممتازة مقابل المال! جودة البناء رائعة ووصل تماماً كما هو موصوف. لقد أوصيت به بالفعل لجميع أصدقائي وعائلتي. سأطلب بالتأكيد المزيد من المنتجات من هذا البائع.', verified: true },
+          { name: 'عمر خليل', rating: 4, comment: 'منتج قوي بميزات رائعة. التغليف كان احترافياً وآمناً. دعم العملاء استجاب بسرعة لأسئلتي. يمكن تحسين دليل المستخدم قليلاً، لكن بشكل عام راضي جداً.', verified: true }
+        ]
+      },
     const templates = {
       mena: {
         en: [
@@ -356,6 +539,12 @@ Always:
           { name: 'Fatima Al-Zahra', rating: 5, comment: 'Amazing product! Worth every penny. My whole family loves it.', verified: true },
           { name: 'Omar Khalil', rating: 4, comment: 'Good value for money. Customer service was very helpful.', verified: true }
         ],
+        ar: [
+          { name: 'أحمد حسن', rating: 5, comment: 'جودة ممتازة وتوصيل سريع. أنصح به بشدة لجميع العائلات!', verified: true },
+          { name: 'فاطمة الزهراء', rating: 5, comment: 'منتج رائع! يستحق كل قرش. عائلتي كلها تحبه.', verified: true },
+          { name: 'عمر خليل', rating: 4, comment: 'قيمة جيدة مقابل المال. خدمة العملاء كانت مفيدة جداً.', verified: true }
+        ]
+      },
         ar: [
           { name: 'أحمد حسن', rating: 5, comment: 'جودة ممتازة وتوصيل سريع. أنصح به بشدة لجميع العائلات!', verified: true },
           { name: 'فاطمة الزهراء', rating: 5, comment: 'منتج رائع! يستحق كل قرش. عائلتي كلها تحبه.', verified: true },
@@ -378,6 +567,10 @@ Always:
       }
     };
 
+    // Use enhanced templates if available, otherwise fall back to basic templates
+    const templates = enhancedTemplates[audience as keyof typeof enhancedTemplates] ? 
+      enhancedTemplates : basicTemplates;
+
     const audienceTemplates = templates[audience as keyof typeof templates];
     const langTemplates = audienceTemplates?.[language as keyof typeof audienceTemplates] || audienceTemplates?.en;
     
@@ -385,6 +578,13 @@ Always:
   }
 
   private generateTrustBadges(audience: string): string[] {
+    // Generate more specific trust badges based on audience
+    const audienceSpecificBadges = {
+      mena: ['Halal Certified', 'Trusted by 100K+ Families', 'Fast Middle East Delivery', 'Arabic Support Available'],
+      america: ['Made in USA', 'FDA Approved', 'BBB Accredited', '30-Day Money Back'],
+      europe: ['CE Certified', 'GDPR Compliant', 'Eco-Friendly', 'European Quality Standards']
+    };
+    
     const badges = {
       mena: [
         'https://images.pexels.com/photos/6801648/pexels-photo-6801648.jpeg?auto=compress&cs=tinysrgb&w=200',
@@ -404,6 +604,10 @@ Always:
   }
 
   private generateUpsells(product: ProductData) {
+    // Generate more relevant upsells based on product category
+    const categoryUpsells = this.getCategorySpecificUpsells(product.category, product.title);
+    if (categoryUpsells.length > 0) return categoryUpsells;
+    
     return [
       {
         title: `${product.title} Accessories Kit`,
@@ -418,6 +622,35 @@ Always:
         image: 'https://images.pexels.com/photos/1649771/pexels-photo-1649771.jpeg?auto=compress&cs=tinysrgb&w=400'
       }
     ];
+  }
+
+  private getCategorySpecificUpsells(category: string, productTitle: string) {
+    const upsellTemplates: Record<string, any[]> = {
+      electronics: [
+        { title: 'Premium Protection Case', description: 'Keep your device safe with our premium case', price: '$24.99' },
+        { title: 'Extended Warranty', description: '3-year comprehensive coverage', price: '$39.99' }
+      ],
+      clothing: [
+        { title: 'Matching Accessories', description: 'Complete your look with matching accessories', price: '$19.99' },
+        { title: 'Care Kit', description: 'Professional cleaning and care products', price: '$14.99' }
+      ],
+      home: [
+        { title: 'Installation Service', description: 'Professional installation by certified technicians', price: '$49.99' },
+        { title: 'Maintenance Kit', description: 'Everything you need for ongoing care', price: '$29.99' }
+      ]
+    };
+
+    const categoryLower = category.toLowerCase();
+    for (const [cat, upsells] of Object.entries(upsellTemplates)) {
+      if (categoryLower.includes(cat)) {
+        return upsells.map(upsell => ({
+          ...upsell,
+          image: 'https://images.pexels.com/photos/279906/pexels-photo-279906.jpeg?auto=compress&cs=tinysrgb&w=400'
+        }));
+      }
+    }
+
+    return [];
   }
 
   private generateContactInfo(options: GenerationOptions) {
