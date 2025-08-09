@@ -134,6 +134,9 @@ function extractProductNameFromUrl(url: string): string {
     return 'Product Search';
   }
 }
+
+async function scrapeWithBrowseAI(url: string, apiKey: string): Promise<ScrapedProduct> {
+  const response = await fetch('https://api.browse.ai/v2/robots/generic-product-scraper/tasks', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
