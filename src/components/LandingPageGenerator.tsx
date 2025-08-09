@@ -366,47 +366,6 @@ export default function LandingPageGenerator() {
                     ))}
                   </select>
                   <p className="text-sm text-gray-500 mt-1">
-                    Select your target country for localized content generation
-                  </p>
-                </div>
-
-                {/* Options Grid */}
-                <div className="grid md:grid-cols-2 gap-6 mb-6">
-                  {/* Template Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Template Style
-                    </label>
-                    <select
-                      value={options.template}
-                      onChange={(e) => setOptions({ ...options, template: e.target.value as any })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={isGenerating}
-                    >
-                      <option value="modern">Modern</option>
-                      <option value="minimal">Minimal</option>
-                      <option value="elegant">Elegant</option>
-                      <option value="bold">Bold</option>
-                    </select>
-                  </div>
-
-                  {/* Language Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Language
-                    </label>
-                    <select
-                      value={options.language}
-                      onChange={(e) => setOptions({ ...options, language: e.target.value as any })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={isGenerating}
-                    >
-                      <option value="en">English</option>
-                      <option value="ar">العربية</option>
-                    </select>
-                  </div>
-                </div>
-
                 {/* Additional Options */}
                 <div className="flex flex-wrap gap-4 mb-6">
                   <label className="flex items-center">
