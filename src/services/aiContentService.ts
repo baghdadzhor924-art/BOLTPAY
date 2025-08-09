@@ -517,28 +517,6 @@ Return ONLY valid JSON format. No additional text or explanations.`;
   }
 
   private getReviewTemplates(audience: string, language: string) {
-    const enhancedTemplates = {
-      mena: {
-        en: [
-          { name: 'Ahmed Hassan', rating: 5, comment: 'Exceptional quality and lightning-fast delivery! This product exceeded all my expectations. My entire family is thrilled with the purchase. The customer service team was incredibly helpful throughout the process.', verified: true },
-          { name: 'Fatima Al-Zahra', rating: 5, comment: 'Outstanding value for money! The build quality is remarkable and it arrived exactly as described. I\'ve already recommended it to all my friends and family. Will definitely be ordering more products from this seller.', verified: true },
-          { name: 'Omar Khalil', rating: 4, comment: 'Solid product with great features. The packaging was professional and secure. Customer support responded quickly to my questions. Minor improvement could be made to the user manual, but overall very satisfied.', verified: true },
-          { name: 'Layla Mansour', rating: 5, comment: 'Perfect for our family needs! The quality is premium and it works exactly as advertised. Shipping was faster than expected. This has become an essential part of our daily routine. Highly recommend!', verified: true },
-          { name: 'Youssef Ibrahim', rating: 5, comment: 'Incredible product! The attention to detail is impressive and the functionality is top-notch. Great investment for the price point. The seller provided excellent communication throughout the entire process.', verified: true }
-        ],
-        ar: [
-          { name: 'أحمد حسن', rating: 5, comment: 'جودة استثنائية وتوصيل سريع البرق! هذا المنتج فاق كل توقعاتي. عائلتي كلها سعيدة جداً بالشراء. فريق خدمة العملاء كان مفيداً بشكل لا يصدق طوال العملية.', verified: true },
-          { name: 'فاطمة الزهراء', rating: 5, comment: 'قيمة ممتازة مقابل المال! جودة البناء رائعة ووصل تماماً كما هو موصوف. لقد أوصيت به بالفعل لجميع أصدقائي وعائلتي. سأطلب بالتأكيد المزيد من المنتجات من هذا البائع.', verified: true },
-          { name: 'عمر خليل', rating: 4, comment: 'منتج قوي بميزات رائعة. التغليف كان احترافياً وآمناً. دعم العملاء استجاب بسرعة لأسئلتي. يمكن تحسين دليل المستخدم قليلاً، لكن بشكل عام راضي جداً.', verified: true }
-        ]
-      },
-    const templates = {
-      mena: {
-        en: [
-          { name: 'Ahmed Hassan', rating: 5, comment: 'Excellent quality and fast delivery. Highly recommend to all families!', verified: true },
-          { name: 'Fatima Al-Zahra', rating: 5, comment: 'Amazing product! Worth every penny. My whole family loves it.', verified: true },
-          { name: 'Omar Khalil', rating: 4, comment: 'Good value for money. Customer service was very helpful.', verified: true }
-        ],
         ar: [
           { name: 'أحمد حسن', rating: 5, comment: 'جودة ممتازة وتوصيل سريع. أنصح به بشدة لجميع العائلات!', verified: true },
           { name: 'فاطمة الزهراء', rating: 5, comment: 'منتج رائع! يستحق كل قرش. عائلتي كلها تحبه.', verified: true },
@@ -568,8 +546,7 @@ Return ONLY valid JSON format. No additional text or explanations.`;
     };
 
     // Use enhanced templates if available, otherwise fall back to basic templates
-    const templates = enhancedTemplates[audience as keyof typeof enhancedTemplates] ? 
-      enhancedTemplates : basicTemplates;
+    const templates = enhancedTemplates;
 
     const audienceTemplates = templates[audience as keyof typeof templates];
     const langTemplates = audienceTemplates?.[language as keyof typeof audienceTemplates] || audienceTemplates?.en;
