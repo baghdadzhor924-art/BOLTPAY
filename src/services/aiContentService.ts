@@ -433,3 +433,5 @@ Always:
   private calculateDiscount(current: string, original: string): string {
     const currentPrice = parseFloat(current.replace(/[^0-9.]/g, ''));
     const originalPrice = parseFloat(original.replace(/[^0-9.]/g, ''));
+  }
+}
