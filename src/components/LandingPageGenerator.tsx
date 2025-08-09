@@ -145,8 +145,8 @@ export default function LandingPageGenerator() {
       console.log(`Would navigate to ${route}`);
     }
   };
-
   };
+
   const handleGenerate = async () => {
     if (!targetMarket) {
       setError('Please select a target country');
