@@ -366,6 +366,10 @@ export default function LandingPageGenerator() {
                     ))}
                   </select>
                   <p className="text-sm text-gray-500 mt-1">
+                    Select your target country for localized content
+                  </p>
+                </div>
+
                 {/* Additional Options */}
                 <div className="flex flex-wrap gap-4 mb-6">
                   <label className="flex items-center">
