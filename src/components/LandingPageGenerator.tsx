@@ -40,6 +40,10 @@ export default function LandingPageGenerator() {
     { value: 'europe', label: 'Europe' }
   ];
 
+  const targetCountries = [
+    { value: 'ecommerce', label: 'E-commerce' }
+  ];
+
   const testimonials = [
     {
       name: 'Sarah Johnson',
