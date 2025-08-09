@@ -9,6 +9,7 @@ import { LandingPageGeneratorService } from '../services/landingPageGeneratorSer
 import { GenerationOptions, GenerationResult } from '../types';
 import Sidebar from './Sidebar';
 import HeroSlider from './HeroSlider';
+import ApiKeySettings from './ApiKeySettings';
 
 export default function LandingPageGenerator() {
   const [url, setUrl] = useState('');
@@ -26,6 +27,7 @@ export default function LandingPageGenerator() {
   const [showPreview, setShowPreview] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [showApiSettings, setShowApiSettings] = useState(false);
 
   const landingPageService = LandingPageGeneratorService.getInstance();
   const generatorRef = useRef<HTMLDivElement>(null);
@@ -113,12 +115,16 @@ export default function LandingPageGenerator() {
     // Handle specific navigation cases
     if (id === 'generate') {
       scrollToSection(generatorRef, 'generator');
+    } else if (id === 'settings_api') {
+      setShowApiSettings(true);
     } else if (id === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      setShowApiSettings(false);
     } else {
       // For other routes, you can implement routing logic here
       // For now, just log the navigation
       console.log(`Would navigate to ${route}`);
+      setShowApiSettings(false);
     }
   };
 
@@ -245,6 +251,24 @@ export default function LandingPageGenerator() {
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-0">
+        {/* API Settings Modal/Page */}
+        {showApiSettings ? (
+          <div className="min-h-screen bg-white">
+            <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
+              <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-gray-900">API Configuration</h1>
+                <button
+                  onClick={() => setShowApiSettings(false)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                >
+                  Back to Generator
+                </button>
+              </div>
+            </div>
+            <ApiKeySettings />
+          </div>
+        ) : (
+          <>
         {/* Hero Section with Slider */}
         <section className="relative h-screen">
           <HeroSlider />
@@ -995,6 +1019,8 @@ export default function LandingPageGenerator() {
             </div>
           </div>
         </footer>
+          </>
+        )}
       </div>
     </div>
   );
