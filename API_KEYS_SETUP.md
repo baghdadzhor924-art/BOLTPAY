@@ -37,6 +37,14 @@ This application requires several API keys to function properly. Follow the step
 2. Go to API section
 3. Copy your API key
 
+### 5. Apify API Key
+**Purpose**: Web scraping for product images and data
+**Get it from**: https://console.apify.com/
+**Steps**:
+1. Sign up for a free account
+2. Go to Settings > Integrations
+3. Copy your API token
+
 ## Configuration
 
 1. **Edit the `.env` file** in your project root
@@ -54,6 +62,9 @@ VITE_SERP_API_KEY=your_actual_serp_key_here
 
 # Remove Background API Key (optional)
 VITE_REMOVE_BG_API_KEY=your_actual_remove_bg_key_here
+
+# Apify API Key
+VITE_APIFY_API_TOKEN=your_actual_apify_token_here
 ```
 
 ## Testing Your Setup
